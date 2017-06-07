@@ -61,7 +61,7 @@ class confluent::zookeeper (
   validate_absolute_path($log_path)
   validate_absolute_path($config_path)
 
-  $application_name = 'zookeeper'
+  $application_name = $service_name
 
   $zookeeper_default_settings = {
     'dataDir'        => {
@@ -89,33 +89,33 @@ class confluent::zookeeper (
       'value' => '-Djava.net.preferIPv4Stack=true'
     },
     'GC_LOG_ENABLED'  => {
-      'value' => 'true'
+      'value' => true
     },
     'LOG_DIR'         => {
       'value' => $log_path
     }
   }
 
-  $actual_zookeeper_settings = merge($zookeeper_default_settings, $config)
-  $actual_java_settings = merge($java_default_settings, $environment_settings)
+  $actual_zookeeper_settings = merge_hash_with_key_rename($zookeeper_default_settings, $config, $application_name)
+  $actual_java_settings = merge_hash_with_key_rename($java_default_settings, $environment_settings, $application_name)
 
   $myid_file = "${data_path}/myid"
 
-  user { $user:
-    ensure => present
-  } ->
+  ensure_resource('user', $user, {'ensure' => 'present' })
   file { [$data_path, $log_path]:
     ensure  => directory,
     owner   => $user,
     group   => $user,
-    recurse => true
-  } ->
+    recurse => true,
+    require => User[$user]
+  }
   file { $myid_file:
     ensure  => present,
-    content => "${zookeeper_id}",
+    content => $zookeeper_id,
     mode    => '0644',
     group   => $user,
-    owner   => $user
+    owner   => $user,
+    require => User[$user]
   }
 
   Package['confluent-kafka-2.11'] -> Ini_setting <| tag == 'kafka-setting' |>
@@ -143,11 +143,11 @@ class confluent::zookeeper (
     'zookeeper/Unit/Description'        => { 'value' => 'Apache Zookeeper by Confluent', },
     'zookeeper/Unit/Wants'              => { 'value' => 'basic.target', },
     'zookeeper/Unit/After'              => { 'value' => 'basic.target network.target', },
-    'zookeeper/Service/User'            => { 'value' => $zookeeper_user, },
+    'zookeeper/Service/User'            => { 'value' => $user, },
     'zookeeper/Service/EnvironmentFile' => { 'value' => $environment_file, },
     'zookeeper/Service/ExecStart'       => { 'value' =>
-    "/usr/bin/zookeeper-server-start /etc/kafka/zookeeper.properties", },
-    'zookeeper/Service/ExecStop'        => { 'value' => "/usr/bin/zookeeper-server-stop", },
+    '/usr/bin/zookeeper-server-start /etc/kafka/zookeeper.properties', },
+    'zookeeper/Service/ExecStop'        => { 'value' => '/usr/bin/zookeeper-server-stop', },
     'zookeeper/Service/LimitNOFILE'     => { 'value' => $file_limit, },
     'zookeeper/Service/KillMode'        => { 'value' => 'process', },
     'zookeeper/Service/RestartSec'      => { 'value' => 5, },
