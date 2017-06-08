@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'confluent::java_property' do
-  let(:title) { 'broker.id' }
+  let(:title) { 'kafka/broker.id' }
   let(:params) {
     {
         :value => '0',

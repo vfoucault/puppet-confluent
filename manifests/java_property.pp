@@ -17,13 +17,15 @@ define confluent::java_property (
   $ensure='present',
   $value=unset
 ) {
-  $setting_name = "${application}_${name}"
+  $splitted = split($name, '/')
+  $setting = $splitted[1]
+  $setting_name = "${application}_${setting}"
 
   ini_setting{ $setting_name:
     ensure  => $ensure,
     path    => $path,
     section => '',
-    setting => $name,
+    setting => $setting,
     tag     => 'kafka-setting',
     value   => $value
   }
