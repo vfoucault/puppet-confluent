@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Puppet::Type.type(:kafkatopic).provider(:confluent) do
+describe Puppet::Type.type(:kafka_topic).provider(:confluent) do
   def fixture_topics_list
     return %w{topic1 topic2 TestENTRY}
   end
