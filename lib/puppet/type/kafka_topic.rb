@@ -3,7 +3,7 @@ require 'uri'
 require 'puppet/util'
 require 'puppet/parameter/boolean'
 
-Puppet::Type.newtype(:kafka_topic) do
+Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
   @doc = 'List, create and delete kafka topics.'
 
   ensurable do
@@ -28,15 +28,6 @@ Puppet::Type.newtype(:kafka_topic) do
         raise ArgumentError, 'Topic name should match alpha, _ and -' unless value =~ /^[_\-a-zA-Z0-9]*$/
       end
     end
-  end
-
-  newparam(:zookeeper) do
-    desc 'A zookeper instance to use (host:port)'
-
-    validate do |zookeeper|
-      raise ArgumentError, 'zookeeper is a hostname with an optional port name' unless zookeeper =~ /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:\d{1,5})?$/
-    end
-
   end
 
   newproperty(:replication_factor) do
@@ -76,10 +67,5 @@ Puppet::Type.newtype(:kafka_topic) do
 
   validate do
 
-    # Validate that zookeeper is required
-
-    if self[:zookeeper].nil?
-      raise ArgumentError, "Zookeeper host must be set in order to create or list topics"
-    end
   end
 end

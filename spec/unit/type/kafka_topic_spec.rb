@@ -1,6 +1,19 @@
 require 'spec_helper'
 
 describe Puppet::Type.type(:kafka_topic) do
+
+  let(:resource) do
+    Puppet::Type.type(:kafka_topic).new(
+        name: 'TOPICTEST',
+        zookeeper: 'some.fake.host:2181'
+    )
+  end
+
+  context 'resource defaults' do
+    it { expect(resource[:num_partitions]).to eq 3 }
+    it { expect(resource[:replication_factor]).to eq 3 }
+  end
+
   describe 'property `name`' do
     it 'passes validation with correct name' do
       expect { described_class.new(name: 'TOPICTEST1', zookeeper: 'faksehostname:2181') }.not_to raise_error
@@ -59,6 +72,8 @@ describe Puppet::Type.type(:kafka_topic) do
       expect { described_class.new(name: 'TOPICTEST', extra_path: "bladibla", zookeeper: 'faksehostname:2181') }.to raise_error Puppet::ResourceError, %r{Extra path is a list separated by ':'}
     end
   end
+
+
 
   describe 'when creating resources' do
 
