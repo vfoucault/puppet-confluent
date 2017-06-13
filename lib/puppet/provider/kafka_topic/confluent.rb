@@ -1,3 +1,4 @@
+require 'pp'
 Puppet::Type.type(:kafka_topic).provide(:confluent) do
 
   has_feature :manage_topics
@@ -22,6 +23,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
       topics = kafka_topics('--list', '--zookeeper', @@topics_classvars[:zk_host]).chomp.split("\n")
       @@topics_classvars[:topics] = topics - ignored_topics
       @@topics_classvars[:initialized] = true
+      Puppet.debug "Known Kafka Topics : #{topics}"
     end
   end
 
@@ -61,6 +63,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
   end
 
   def self.instances
+    puts @@topics_classvars
     existing_topics = []
     @@topics_classvars[:topics].each do |topic|
       existing_topics << new(describe_topic(topic))
