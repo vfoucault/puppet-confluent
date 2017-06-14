@@ -39,84 +39,147 @@
 #     OUTPUT
 #   end
 #
-#   describe provider_class do
-#     #include PuppetSpec::Fixtures
-#
-#     let(:resource) do
-#       Puppet::Type.type(:kafka_topic).new(
-#           :name => 'TestTopic2',
-#           :ensure => :present,
-#           :provider => 'confluent'
-#       )
-#     end
-#
-#
-#     let(:provider) do
-#
-#       provider = provider_class.new
-#       provider.stubs(:`).with('grep -E \'(server.1|clientPort)\' /etc/kafka/zookeeper.properties').returns(:get_zk_host)
-#       provider.stubs(:kafka_topic).with('--list', '--zookeeper', 'zookeeper1.corp:2181').returns(:list_topics)
-#       provider.resource = resource
-#       provider
-#     end
-#
-#     before :each do
-#       resource.provider = provider
-#     end
-#
-#     describe 'provider features' do
-#       it { is_expected.to be_versionable }
-#       it { is_expected.to be_install_options }
-#       [:install, :latest, :update, :install_options].each do |method|
-#         it "should have a(n) #{method}" do
-#           is_expected.to respond_to(method)
-#         end
-#       end
-#     end
-#
-#     # describe 'when installing' do
-#     #   it 'should use the path to puppet with arguments' do
-#     #     provider_class.stubs(:command).with(:puppetcmd).returns "/my/puppet"
-#     #     provider.expects(:execute).with {|args| args.join(' ') == "/my/puppet module install vendor-modulename" }.returns ""
-#     #     provider.install
-#     #   end
-#     # end
-#
-#   end
-#
-# end
-# # require 'spec_helper'
-# # require 'pp'
-# #
-# # confluent_provider = Puppet::Type.type(:kafka_topic).provider(:confluent)
-# #
-# # describe confluent_provider do
-# #   # it_behaves_like 'a kafka_topic provider', confluent_provider
-# #
-#
-# #
-# #     context 'the whole init' do
-# #
-# #       describe 'instances' do
-# #         it 'should have an instance method' do
-# #           expect(described_class).to respond_to :instances
-# #         end
-# #       end
-# #
-# #       describe 'prefetch' do
-# #         it 'should have a prefetch method' do
-# #           expect(described_class).to respond_to :prefetch
-# #         end
-# #       end
-# #     end
-# #
-# #   context 'get topics' do
-# #     before :each do
-#
-# #     end
-# #     it 'should return no resources' do
-# #       expect(described_class.instances.size).to eq(0)
-# #     end
-# #   end
-# # end
-# #
+require 'spec_helper'
+
+describe Puppet::Type.type(:kafka_topic).provider(:confluent) do
+
+
+  let(:raw_one_host) do
+    <<-OUTPUT
+zookeeper.connect=zoo1.keeper.localnet:2181
+
+# Timeout in ms for connecting to zookeeper
+zookeeper.connection.timeout.ms=1000000
+    OUTPUT
+  end
+
+  let(:raw_hosts) do
+    <<-OUTPUT
+zookeeper.connect=zoo1.keeper.localnet:2181,zoo2.keeper.localnet:2181,zoo3.keeper.localnet:2181
+
+# Timeout in ms for connecting to zookeeper
+zookeeper.connection.timeout.ms=1000000
+    OUTPUT
+  end
+
+  let(:described_topics) do
+    <<-OUTPUT
+   Topic:topic1	PartitionCount:3	ReplicationFactor:3	Configs:
+   	Topic: topic1	Partition: 0	Leader: 1	Replicas: 1,3,2	Isr: 1,3,2
+   	Topic: topic1	Partition: 1	Leader: 2	Replicas: 2,1,3	Isr: 2,1,3
+   	Topic: topic1	Partition: 2	Leader: 3	Replicas: 3,2,1	Isr: 3,2,1
+   Topic:topic2	PartitionCount:2	ReplicationFactor:2	Configs:
+   	Topic: topic2	Partition: 0	Leader: 1	Replicas: 1,2 	Isr: 1,2,3
+   	Topic: topic2	Partition: 1	Leader: 2	Replicas: 2,1 	Isr: 2,1,3
+   Topic:TestTopic	PartitionCount:1	ReplicationFactor:1	Configs:
+   	Topic: TestTopic	Partition: 0	Leader: 1	Replicas: 1 	Isr: 1,2,3
+    OUTPUT
+  end
+
+  let(:raw_databases) do
+    <<-SQL_OUTPUT
+information_schema
+mydb
+mysql
+performance_schema
+test
+    SQL_OUTPUT
+  end
+
+  let(:resource) { Puppet::Type.type(:kafka_topic).new(
+      { :ensure             => :present,
+        :name               => 'HEYTOPIC',
+        :replication_factor => 2,
+        :num_partitions     => 2,
+        :provider => described_class.name
+      }
+  )}
+  let(:provider) { resource.provider }
+
+  before :each do
+    Facter.stubs(:value).with(:root_home).returns('/root')
+    Puppet::Util.stubs(:which).with('mysql').returns('/usr/bin/mysql')
+    File.stubs(:file?).with('/root/.my.cnf').returns(true)
+    provider.class.stubs(:mysql).with([defaults_file, '-NBe', 'show databases']).returns('new_database')
+    provider.class.stubs(:mysql).with([defaults_file, '-NBe', "show variables like '%_database'", 'new_database']).returns("character_set_database latin1\ncollation_database latin1_swedish_ci\nskip_show_database OFF")
+  end
+
+  let(:instance) { provider.class.instances.first }
+
+  describe 'self.instances' do
+    it 'returns an array of topics' do
+      provider.class.stubs(:kafka_topic).with('--describe', '--zookeeper', 'zoo1.keeper.localnet:2181').returns(described_topics)
+      databases = provider.class.instances.collect {|x| x.name }
+      expect(parsed_databases).to match_array(databases)
+    end
+  end
+
+  describe 'self.prefetch' do
+    it 'exists' do
+      provider.class.instances
+      provider.class.prefetch({})
+    end
+  end
+
+  describe 'create' do
+    it 'makes a database' do
+      provider.expects(:mysql).with([defaults_file, '-NBe', "create database if not exists `#{resource[:name]}` character set `#{resource[:charset]}` collate `#{resource[:collate]}`"])
+      provider.expects(:exists?).returns(true)
+      expect(provider.create).to be_truthy
+    end
+  end
+
+  describe 'destroy' do
+    it 'removes a database if present' do
+      provider.expects(:mysql).with([defaults_file, '-NBe', "drop database if exists `#{resource[:name]}`"])
+      provider.expects(:exists?).returns(false)
+      expect(provider.destroy).to be_truthy
+    end
+  end
+
+  describe 'exists?' do
+    it 'checks if database exists' do
+      expect(instance.exists?).to be_truthy
+    end
+  end
+
+  describe 'self.defaults_file' do
+    it 'sets --defaults-extra-file' do
+      File.stubs(:file?).with('/root/.my.cnf').returns(true)
+      expect(provider.defaults_file).to eq '--defaults-extra-file=/root/.my.cnf'
+    end
+    it 'fails if file missing' do
+      File.stubs(:file?).with('/root/.my.cnf').returns(false)
+      expect(provider.defaults_file).to be_nil
+    end
+  end
+
+  describe 'charset' do
+    it 'returns a charset' do
+      expect(instance.charset).to eq('latin1')
+    end
+  end
+
+  describe 'charset=' do
+    it 'changes the charset' do
+      provider.expects(:mysql).with([defaults_file, '-NBe', "alter database `#{resource[:name]}` CHARACTER SET blah"]).returns('0')
+
+      provider.charset=('blah')
+    end
+  end
+
+  describe 'collate' do
+    it 'returns a collate' do
+      expect(instance.collate).to eq('latin1_swedish_ci')
+    end
+  end
+
+  describe 'collate=' do
+    it 'changes the collate' do
+      provider.expects(:mysql).with([defaults_file, '-NBe', "alter database `#{resource[:name]}` COLLATE blah"]).returns('0')
+
+      provider.collate=('blah')
+    end
+  end
+
+end
