@@ -16,7 +16,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
 
   # fetch zkhosts
   def self.get_zk_host
-    if File.file?("/etc/kafka/zookeeper.properties")
+    if File.file?("/etc/kafka/server.properties")
       rawdata = File.open("/etc/kafka/server.properties").readlines().flat_map {|x| x.strip.split('=')[1].split(',') if x.strip.start_with?('zookeeper.connect=')}.compact
       alive = rawdata.map {|x| x if self.port_open?(x)}.compact
       if alive.length > 0
