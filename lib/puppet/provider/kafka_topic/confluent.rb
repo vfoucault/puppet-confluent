@@ -14,21 +14,19 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
     @property_flush = {}
   end
 
-  # fetch zkhosts
   def self.get_zk_host
     if File.file?("/etc/kafka/server.properties")
-      rawdata = File.open("/etc/kafka/server.properties").readlines().flat_map {|x| x.strip.split('=')[1].split(',') if x.strip.start_with?('zookeeper.connect=')}.compact
+      rawdata = File.open('/etc/kafka/server.properties').readlines().flat_map { |x| x.split("=")[1].chomp.split(',') if x =~ %r{^zookeeper.connect(\s)?=} }.compact
       alive = rawdata.map {|x| x if self.port_open?(x)}.compact
       if alive.length > 0
         return alive.sample
       else
-        raise Puppet::Error "No zookeeper host alive"
+        raise Puppet::Error, "No zookeeper host alive"
       end
     else
-      raise Puppet::Error "Unable to discover zookeeper host"
+      raise Puppet::Error, "Unable to discover zookeeper host"
     end
   end
-
 
   def self.port_open?(uri, seconds=1)
     Timeout::timeout(seconds) do
@@ -43,7 +41,6 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
   rescue Timeout::Error
     false
   end
-
 
   def get_zk_host
     self.class.get_zk_host
@@ -103,7 +100,6 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
     end
   end
 
-
   def create
     @property_flush[:ensure] = :present
   end
@@ -115,7 +111,6 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
   def destroy
     @property_flush[:ensure] = :absent
   end
-
 
   def do_the_job
     case @property_flush[:ensure]
@@ -134,5 +129,4 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
     do_the_job
     @property_hash = self.class.instances(resource[:name])
   end
-
 end

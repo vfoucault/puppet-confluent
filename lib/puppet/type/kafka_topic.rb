@@ -1,8 +1,3 @@
-require 'pathname'
-require 'uri'
-require 'puppet/util'
-require 'puppet/parameter/boolean'
-
 Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
   @doc = 'List, create and delete kafka topics.'
 
@@ -42,7 +37,6 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
     end
   end
 
-
   newproperty(:num_partitions) do
     desc 'The topic\'s number of partitions'
     defaultto(3)
@@ -55,7 +49,6 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
     end
   end
 
-
   newparam(:extra_path) do
     desc 'Extra path to locate kafka-topics command'
     validate do |extra_path|
@@ -63,9 +56,5 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
         raise ArgumentError, 'Extra path is a list separated by \':\'' unless absolute_path? path
       end
     end
-  end
-
-  validate do
-
   end
 end
