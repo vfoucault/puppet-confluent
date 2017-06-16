@@ -82,14 +82,13 @@ class confluent::schema::registry (
   $log4j_log_dir = $java_default_settings['LOG_DIR']['value']
   validate_absolute_path($log4j_log_dir)
 
-  user { $user:
-    ensure => present
-  }
-  -> file { [$log_path]:
+  ensure_resource('user', $user)
+  file { $log_path:
     ensure  => directory,
     owner   => $user,
     group   => $user,
-    recurse => true
+    recurse => true,
+    require => User[$user]
   }
 
   package { 'confluent-schema-registry':

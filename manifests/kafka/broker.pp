@@ -99,15 +99,14 @@ class confluent::kafka::broker (
   $actual_kafka_settings = merge_hash_with_key_rename($kafka_default_settings, $config, $application_name)
   $actual_java_settings = merge_hash_with_key_rename($java_default_settings, $environment_settings, $application_name)
 
-  user { $user:
-    ensure => present
+  ensure_resource('user', $user)
+  file { [$log_path, $data_path]:
+    ensure  => directory,
+    owner   => $user,
+    group   => $user,
+    recurse => true,
+    require => User[$user]
   }
-  -> file { [$log_path, $data_path]:
-      ensure  => directory,
-      owner   => $user,
-      group   => $user,
-      recurse => true
-    }
 
   $ensure_kafka_settings_defaults = {
     'ensure'      => 'present',

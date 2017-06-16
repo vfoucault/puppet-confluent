@@ -101,19 +101,21 @@ class confluent::zookeeper (
 
   $myid_file = "${data_path}/myid"
 
-  user { $user:
-    ensure => present
-  } -> file { [$data_path, $log_path]:
+  ensure_resource('user', $user)
+  file { [$data_path, $log_path]:
     ensure  => directory,
     owner   => $user,
     group   => $user,
-    recurse => true
-  } -> file { $myid_file:
+    recurse => true,
+    require => User[$user]
+  }
+  file { $myid_file:
     ensure  => present,
     content => $zookeeper_id,
     mode    => '0644',
     group   => $user,
-    owner   => $user
+    owner   => $user,
+    require => User[$user]
   }
 
   Package['confluent-kafka-2.11'] -> Ini_setting <| tag == 'kafka-setting' |>

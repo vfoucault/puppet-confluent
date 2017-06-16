@@ -71,15 +71,13 @@ class confluent::kafka::connect::distributed (
 
   include ::confluent::kafka::connect
 
-  user { $user:
-    ensure => present,
-    alias  => 'kafka-connect-distributed'
-  }
-  -> file { $log_path:
+  ensure_resource('user', $user)
+  file { $log_path:
       ensure  => directory,
       owner   => $user,
       group   => $user,
-      recurse => true
+      recurse => true,
+      require => User[$user]
     }
 
   $application_name = 'connect-distributed'

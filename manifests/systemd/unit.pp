@@ -18,7 +18,7 @@ define confluent::systemd::unit (
   $file_limit=undef,
   $restart_sec=5
 ) {
-
+  include confluent::systemd
   $service_file = "/usr/lib/systemd/system/${name}.service"
 
   ini_setting { "${name}/Unit/Description":
@@ -27,7 +27,7 @@ define confluent::systemd::unit (
     section => 'Unit',
     setting => 'Description',
     value   => $description,
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   ini_setting { "${name}/Unit/Wants":
@@ -36,7 +36,7 @@ define confluent::systemd::unit (
     section => 'Unit',
     setting => 'Wants',
     value   => 'basic.target',
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   ini_setting { "${name}/Unit/After":
@@ -45,7 +45,7 @@ define confluent::systemd::unit (
     section => 'Unit',
     setting => 'After',
     value   => 'basic.target network.target',
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   User[$user]
@@ -55,7 +55,7 @@ define confluent::systemd::unit (
     section => 'Service',
     setting => 'User',
     value   => $user,
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   if($environment_file) {
@@ -65,7 +65,7 @@ define confluent::systemd::unit (
       section => 'Service',
       setting => 'EnvironmentFile',
       value   => $environment_file,
-      notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+      notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
     }
   }
 
@@ -75,7 +75,7 @@ define confluent::systemd::unit (
     section => 'Service',
     setting => 'ExecStart',
     value   => $exec_start,
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   if($exec_stop){
@@ -96,7 +96,7 @@ define confluent::systemd::unit (
       section => 'Service',
       setting => 'LimitNOFILE',
       value   => $file_limit,
-      notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+      notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
     }
   }
 
@@ -106,7 +106,7 @@ define confluent::systemd::unit (
     section => 'Service',
     setting => 'KillMode',
     value   => 'process',
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   ini_setting { "${name}/Service/RestartSec":
@@ -115,7 +115,7 @@ define confluent::systemd::unit (
     section => 'Service',
     setting => 'RestartSec',
     value   => $restart_sec,
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   ini_setting { "${name}/Service/Type":
@@ -124,7 +124,7 @@ define confluent::systemd::unit (
     section => 'Service',
     setting => 'Type',
     value   => 'simple',
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 
   ini_setting { "${name}/Install/WantedBy":
@@ -133,6 +133,6 @@ define confluent::systemd::unit (
     section => 'Install',
     setting => 'WantedBy',
     value   => 'multi-user.target',
-    notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+    notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
   }
 }

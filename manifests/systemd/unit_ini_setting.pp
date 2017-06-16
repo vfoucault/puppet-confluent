@@ -3,6 +3,7 @@
 # @param ensure present to create the unit, false to remove it.
 # @param value Value to set.
 define confluent::systemd::unit_ini_setting($ensure, $value=undef){
+  include confluent::systemd
   validate_re($name, '^[\w-]+\/[\w]+\/[\w]+$')
   $name_parts=split($name, '/')
   $unit_name = $name_parts[0]
@@ -23,7 +24,7 @@ define confluent::systemd::unit_ini_setting($ensure, $value=undef){
         section => $section,
         setting => $setting,
         value   => $value,
-        notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+        notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
       }
     }
     'absent': {
@@ -32,7 +33,7 @@ define confluent::systemd::unit_ini_setting($ensure, $value=undef){
         path    => $service_file,
         section => $section,
         setting => $setting,
-        notify  => [Service['kafka'],Exec['kafka-systemctl-daemon-reload']]
+        notify  => [Exec['kafka-systemctl-daemon-reload'],Service['kafka']]
       }
     }
     default: {
