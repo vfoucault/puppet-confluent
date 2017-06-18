@@ -80,14 +80,12 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
       end
       connector_class = info['config'].delete('connector.class')
       max_tasks = info['config'].delete('tasks.max')
-      topics = info['config'].delete('topics')
       extra_config = info['config']
       instances << new(:name               => connector,
                        :ensure             => state,
                        :type               => :distributed,
                        :class              => connector_class,
                        :max_tasks          => max_tasks,
-                       :topics             => topics,
                        :extra_config       => extra_config,
       )
 
@@ -116,13 +114,24 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
     @property_flush[:ensure] = :absent
   end
 
+  def build_config(resource)
+    config = Hash.new
+    config['name'] = resource[:name]
+    config['config'] = resource[:extra_config]
+    config['config']['max.tasks'] = resource[:max_tasks]
+    config['config']['connector.class'] = resource[:class]
+  end
+
+
   def do_the_job
     resturi = resturl
     case @property_flush[:ensure]
       when :absent
-          connectors = HTTParty.delete(resturi + '/connectors/' + resource[:name])
+          HTTParty.delete(resturi + '/connectors/' + resource[:name])
+      when :paused
+          HTTParty.post(resturi + '/connectors/' + resource[:name] + '/pause')
       when :present
-          config = { }
+          config = build_config(resource)
           HTTParty.post(resturi + '/connectors',
                         :body => config.to_json,
                         :headers =>  {"Content-Type" => "application/json"})

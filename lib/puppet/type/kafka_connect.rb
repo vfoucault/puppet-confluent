@@ -39,11 +39,13 @@ Puppet::Type.newtype(:kafka_connect, :self_refresh => false) do
     desc 'The connector maximum number of tasks'
   end
 
-  newproperty(:topics) do
-    desc 'The connector topics value'
-  end
-
   newproperty(:extra_config) do
     desc 'Extra configuration (hash)'
+    validate do |extra_config|
+      begin
+        Hash(extra_config)
+      rescue
+        raise ArgumentError, 'the replication factor must be an integer'
+      end
   end
 end

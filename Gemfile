@@ -8,6 +8,7 @@ group :development, :test do
   gem 'rake', :require => false
   gem 'rspec-puppet', :require => false
   gem 'syck', :require => false
+  gem 'httparty', :require => false
   if RUBY_VERSION > '2'
     gem 'rubocop', :require => false
   end
