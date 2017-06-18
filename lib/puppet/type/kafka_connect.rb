@@ -47,5 +47,6 @@ Puppet::Type.newtype(:kafka_connect, :self_refresh => false) do
       rescue
         raise ArgumentError, 'the replication factor must be an integer'
       end
+    end
   end
 end

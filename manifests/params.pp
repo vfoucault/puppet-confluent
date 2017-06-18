@@ -29,6 +29,7 @@ class confluent::params {
   $kafka_config_path = '/etc/kafka/server.properties'
   $kafka_log_path = '/var/log/kafka'
   $kafka_data_path = '/var/lib/kafka'
+  $kafka_rest_config_path = '/etc/kafka-rest/kafka-rest.properties'
 
   $zookeeper_user = 'zookeeper'
   $zookeeper_service = 'zookeeper'
