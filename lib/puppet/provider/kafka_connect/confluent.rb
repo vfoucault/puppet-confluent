@@ -1,6 +1,7 @@
 require 'socket'
 require 'timeout'
 require 'httparty'
+require 'pp'
 
 Puppet::Type.type(:kafka_connect).provide(:confluent) do
   # Without initvars commands won't work.
@@ -16,7 +17,7 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
   end
 
   def self.resturl
-   "http://" + Socket.gethostname + ":" + self.get_rest_port
+    "http://" + Socket.gethostname + ":" + self.get_rest_port
   end
 
   def self.get_rest_port
@@ -56,12 +57,13 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
   end
 
   def self.instances(name=nil)
+    options = [:http_proxyaddr => nil]
     hash_data = Hash.new
     resturi = self.resturl
-    connectors = HTTParty.get(resturi + '/connectors').parsed_response
+    connectors = HTTParty.get(resturi + '/connectors', *options).parsed_response
     connectors.each do |connector|
-      connector_info = HTTParty.get(resturi + '/connectors/' + connector).parsed_response
-      connector_status = HTTParty.get(resturi + '/connectors/' + connector + '/status').parsed_response
+      connector_info = HTTParty.get(resturi + '/connectors/' + connector, *options).parsed_response
+      connector_status = HTTParty.get(resturi + '/connectors/' + connector + '/status', *options).parsed_response
       hash_data[connector] = connector_info
       hash_data[connector]['status'] = connector_status['connector']
       hash_data[connector]['tasks'] = connector_status['tasks']
@@ -78,17 +80,11 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
         when 'FAILED'
           state = :present
       end
-      connector_class = info['config'].delete('connector.class')
-      max_tasks = info['config'].delete('tasks.max')
-      extra_config = info['config']
+      connect = info['config']
+      connect.delete('name')
       instances << new(:name               => connector,
                        :ensure             => state,
-                       :type               => :distributed,
-                       :class              => connector_class,
-                       :max_tasks          => max_tasks,
-                       :extra_config       => extra_config,
-      )
-
+                       :connect            => connect                      )
     end
     instances
   end
@@ -115,26 +111,28 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
   end
 
   def build_config(resource)
-    config = Hash.new
-    config['name'] = resource[:name]
-    config['config'] = resource[:extra_config]
-    config['config']['max.tasks'] = resource[:max_tasks]
-    config['config']['connector.class'] = resource[:class]
+    connect_config = Hash.new
+    connect_config['name'] = resource[:name]
+    connect_config['config'] = resource[:connect]
+    connect_config['config'].delete('name')
+    connect_config
   end
 
 
   def do_the_job
+    options = [:http_proxyaddr => nil]
     resturi = resturl
     case @property_flush[:ensure]
       when :absent
-          HTTParty.delete(resturi + '/connectors/' + resource[:name])
-      when :paused
-          HTTParty.post(resturi + '/connectors/' + resource[:name] + '/pause')
+        HTTParty.delete(resturi + '/connectors/' + resource[:name], *options)
+      # when :paused
+      #     HTTParty.post(resturi + '/connectors/' + resource[:name] + '/pause', *options)
       when :present
-          config = build_config(resource)
-          HTTParty.post(resturi + '/connectors',
-                        :body => config.to_json,
-                        :headers =>  {"Content-Type" => "application/json"})
+        config = build_config(resource)
+        HTTParty.post(resturi + '/connectors',
+                      :body => config.to_json,
+                      :headers => {"Content-Type" => "application/json"},
+                      :http_proxyaddr => nil)
     end
   end
 

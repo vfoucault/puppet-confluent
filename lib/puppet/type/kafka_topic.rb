@@ -16,7 +16,7 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
 
   end
 
-  newparam(:name, namevar: true) do
+  newparam(:name) do
     desc 'topic name'
     validate do |value|
       unless Puppet::Util.absolute_path? value

@@ -12,40 +12,22 @@ Puppet::Type.newtype(:kafka_connect, :self_refresh => false) do
       provider.destroy
     end
 
-    newvalue(:pause) do
-      provider.destroy
-    end
-
     defaultto(:present)
 
   end
 
   newparam(:name) do
-    desc 'connect name'
+    desc 'Connect name'
   end
 
-  newparam(:type) do
-    desc 'connect type'
-    newvalue(:standalone)
-    newvalue(:distributed)
-    defaultto(:distributed)
-  end
 
-  newproperty(:class) do
-    desc 'The connector class'
-  end
-
-  newproperty(:max_tasks) do
-    desc 'The connector maximum number of tasks'
-  end
-
-  newproperty(:extra_config) do
+  newproperty(:connect) do
     desc 'Extra configuration (hash)'
-    validate do |extra_config|
+    validate do |connect|
       begin
-        Hash(extra_config)
+        Hash(connect)
       rescue
-        raise ArgumentError, 'the replication factor must be an integer'
+        raise ArgumentError, 'Connect must be a hash'
       end
     end
   end
