@@ -4,10 +4,7 @@ require 'httparty'
 require 'pp'
 
 Puppet::Type.type(:kafka_connect).provide(:confluent) do
-  # Without initvars commands won't work.
   initvars
-
-  commands :curl => '/usr/bin/curl'
 
   mk_resource_methods
 
@@ -56,7 +53,7 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
     self.class.resturl
   end
 
-  def self.instances(name=nil)
+  def self.instances()
     options = [:http_proxyaddr => nil]
     hash_data = Hash.new
     resturi = self.resturl
@@ -72,19 +69,11 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
     instances = []
     hash_data.each do |connector, info|
       status = info['status']['state']
-      case status
-        when 'PAUSED'
-          state = :paused
-        when 'RUNNING'
-          state = :present
-        when 'FAILED'
-          state = :present
-      end
       connect = info['config']
       connect.delete('name')
-      instances << new(:name               => connector,
-                       :ensure             => state,
-                       :connect            => connect                      )
+      instances << new(:name    => connector,
+                       :ensure  => :present,
+                       :connect => connect                      )
     end
     instances
   end
@@ -120,13 +109,10 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
 
 
   def do_the_job
-    options = [:http_proxyaddr => nil]
     resturi = resturl
     case @property_flush[:ensure]
       when :absent
         HTTParty.delete(resturi + '/connectors/' + resource[:name], *options)
-      # when :paused
-      #     HTTParty.post(resturi + '/connectors/' + resource[:name] + '/pause', *options)
       when :present
         config = build_config(resource)
         HTTParty.post(resturi + '/connectors',

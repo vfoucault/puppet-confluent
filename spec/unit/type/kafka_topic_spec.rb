@@ -54,17 +54,6 @@ describe Puppet::Type.type(:kafka_topic) do
     end
   end
 
-  describe 'property `extra_path`' do
-    it 'passes validation with an list of correct paths path' do
-      expect { described_class.new(name: 'TOPICTEST', extra_path: '/usr/bin:/usr/sbin/:/opt/path/to/bins') }.not_to raise_error
-    end
-    it 'fails validation without an absolute path' do
-      expect { described_class.new(name: 'TOPICTEST', extra_path: "bladibla") }.to raise_error Puppet::ResourceError, %r{Extra path is a list separated by ':'}
-    end
-  end
-
-
-
   describe 'when creating resources' do
 
     it 'creating resource should not fail with correct parameters' do
@@ -85,7 +74,7 @@ describe Puppet::Type.type(:kafka_topic) do
           num_partitions: '3',
           replication_factor: '4',
           bladibla: '4'
-      ) }.to raise_error Puppet::Error, %r{no parameter named 'bladibla'}
+      ) }.to raise_error Puppet::Error #, %r{Invalid parameter named 'bladibla'}
 
 
     end

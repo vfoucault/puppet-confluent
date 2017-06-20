@@ -13,20 +13,21 @@ Puppet::Type.newtype(:kafka_connect, :self_refresh => false) do
     end
 
     defaultto(:present)
-
   end
 
   newparam(:name) do
     desc 'Connect name'
+    validate do |value|
+      unless value =~ /^[_\-a-zA-Z0-9]*$/
+        raise ArgumentError, 'Connect name should match alpha, _ and -'
+      end
+    end
   end
 
-
   newproperty(:connect) do
-    desc 'Extra configuration (hash)'
+    desc 'configuration (hash)'
     validate do |connect|
-      begin
-        Hash(connect)
-      rescue
+      unless connect.is_a?(Hash)
         raise ArgumentError, 'Connect must be a hash'
       end
     end

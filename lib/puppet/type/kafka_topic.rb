@@ -19,8 +19,8 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
   newparam(:name) do
     desc 'topic name'
     validate do |value|
-      unless Puppet::Util.absolute_path? value
-        raise ArgumentError, 'Topic name should match alpha, _ and -' unless value =~ /^[_\-a-zA-Z0-9]*$/
+      unless value =~ /^[_\-a-zA-Z0-9]*$/
+        raise ArgumentError, 'Topic name should match alpha, _ and -'
       end
     end
   end
@@ -45,15 +45,6 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
         Integer(num)
       rescue
         raise ArgumentError, 'the number of partitions must be an integer'
-      end
-    end
-  end
-
-  newparam(:extra_path) do
-    desc 'Extra path to locate kafka-topics command'
-    validate do |extra_path|
-      extra_path.split(':').each do |path|
-        raise ArgumentError, 'Extra path is a list separated by \':\'' unless absolute_path? path
       end
     end
   end

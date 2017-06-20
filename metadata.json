@@ -1,5 +1,5 @@
 {
-  "name": "vfoucault-pmu_app_bigdata_named",
+  "name": "puppet-confluent",
   "version": "0.1.0",
   "author": "Jeremy Custenborder",
   "summary": "Application module to deploy Confluent plateform",
