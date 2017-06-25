@@ -7,6 +7,7 @@ This puppet module is used to install and configure the Confluent Platform. The 
 1. The only tested operating system is Centos 7. 
 1. Yum repositories are not created.
 1. Kerberos? haha you're funny
+1. Spec tests for providers ! (i don t know how to properly do that)
 
 ### Usage
 
@@ -274,6 +275,84 @@ confluent::control::center::config:
 confluent::control::center::environment_settings:
   CONTROL_CENTER_HEAP_OPTS:
     value: -Xmx6g
+```
+
+## Add a kakfa topic with the topic provider
+
+```puppet
+kafka_topic { 'mytopic':
+  ensure => present,
+  name    => 'kafka101_sink',
+  connect => {
+    'file' => '/path/to/kafka101.txt',
+    'connector.class' => 'org.apache.kafka.connect.file.FileStreamSinkConnector',
+    'key.converter.schema.registry.url' => 'http://kafkanode1:8081',
+    'tasks.max' => '1',
+    'topics' => 'kafka101',
+    'value.converter' => 'org.apache.kafka.connect.storage.StringConverter',
+    'value.converter.schema.registry.url' => 'http://kafkanode1:8081',
+    }
+}
+```
+
+### Hiera installation
+
+```puppet
+$topics = hiera('my_topics_to_create')
+ensure_resources('kafka_topic', $topics)
+```
+
+```yaml
+my_topics_to_create:
+    kafka101:
+      replication_factor: 1
+      num_partitions: 3
+    kafka201:
+      replication_factor: 2
+      num_partitions: 16
+```
+
+## Add a kakfa Connecot with the connect provider
+
+```puppet
+kafka_conect { 'mytopic':
+  ensure => present,
+  num_partitions => 3,
+  replication_factor => 2,
+}
+```
+
+### Hiera installation
+
+```puppet
+$connect_tasks = hiera('kafka_connect_tasks')
+ensure_resources('kafka_connect', $connect_tasks)
+```
+
+```yaml
+kafka_connect_tasks:
+  kafka101_sink:
+    ensure: present
+    name: kafka101_sink
+    connect:
+      file: '/path/to/kafka101.txt'
+      connector.class: 'org.apache.kafka.connect.file.FileStreamSinkConnector'
+      key.converter.schema.registry.url: 'http://kafkanode1:8081'
+      tasks.max: '1'
+      topics: 'kafka101'
+      value.converter: 'org.apache.kafka.connect.storage.StringConverter'
+      value.converter.schema.registry.url: 'http://kafkanode1:8081'
+  kafka101_source:
+    ensure: present
+    name: kafka101_source
+    connect:
+      file: '/path/to/source_kafka101.txt'
+      connector.class: 'org.apache.kafka.connect.file.FileStreamSourceConnector'
+      key.converter.schema.registry.url: 'http://kafkanode1:8081'
+      tasks.max: '1'
+      topic: 'kafka101'
+      value.converter: 'org.apache.kafka.connect.storage.StringConverter'
+      value.converter.schema.registry.url: 'http://kafkanode1:8081'
 ```
 
 # Run tests
