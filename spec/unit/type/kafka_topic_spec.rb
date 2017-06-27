@@ -9,8 +9,8 @@ describe Puppet::Type.type(:kafka_topic) do
   end
 
   context 'resource defaults' do
-    it { expect(resource[:num_partitions]).to eq 3 }
-    it { expect(resource[:replication_factor]).to eq 3 }
+    it { expect(resource[:partitions]).to eq 3 }
+    it { expect(resource[:replication]).to eq 3 }
   end
 
   describe 'property `name`' do
@@ -28,29 +28,29 @@ describe Puppet::Type.type(:kafka_topic) do
     end
   end
 
-  describe 'property `replication_factor`' do
+  describe 'property `replication`' do
     it 'passes validation with a correct valid integer' do
-      expect { described_class.new(name: 'TOPICTEST', replication_factor: '3') }.not_to raise_error
-      expect { described_class.new(name: 'TOPICTEST', replication_factor: ' 3 ') }.not_to raise_error
-      expect { described_class.new(name: 'TOPICTEST', replication_factor: 3) }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', replication: '3') }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', replication: ' 3 ') }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', replication: 3) }.not_to raise_error
     end
 
     it 'fails validation with an incorrect value' do
-      expect { described_class.new(name: 'TOPICTEST', replication_factor: 'three') }.to raise_error Puppet::ResourceError, %r{the replication factor must be an integer}
-      expect { described_class.new(name: 'TOPICTEST', replication_factor: '4 5') }.to raise_error Puppet::ResourceError, %r{the replication factor must be an integer}
+      expect { described_class.new(name: 'TOPICTEST', replication: 'three') }.to raise_error Puppet::ResourceError, %r{the replication factor must be an integer}
+      expect { described_class.new(name: 'TOPICTEST', replication: '4 5') }.to raise_error Puppet::ResourceError, %r{the replication factor must be an integer}
     end
   end
 
-  describe 'property `num_partitions`' do
+  describe 'property `partitions`' do
     it 'passes validation with a correct valid integer' do
-      expect { described_class.new(name: 'TOPICTEST', num_partitions: '3') }.not_to raise_error
-      expect { described_class.new(name: 'TOPICTEST', num_partitions: ' 3 ') }.not_to raise_error
-      expect { described_class.new(name: 'TOPICTEST', num_partitions: 3) }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', partitions: '3') }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', partitions: ' 3 ') }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', partitions: 3) }.not_to raise_error
     end
 
     it 'fails validation with an incorrect value' do
-      expect { described_class.new(name: 'TOPICTEST', num_partitions: 'three') }.to raise_error Puppet::ResourceError, %r{the number of partitions must be an integer}
-      expect { described_class.new(name: 'TOPICTEST', num_partitions: '4 5') }.to raise_error Puppet::ResourceError, %r{the number of partitions must be an integer}
+      expect { described_class.new(name: 'TOPICTEST', partitions: 'three') }.to raise_error Puppet::ResourceError, %r{the number of partitions must be an integer}
+      expect { described_class.new(name: 'TOPICTEST', partitions: '4 5') }.to raise_error Puppet::ResourceError, %r{the number of partitions must be an integer}
     end
   end
 
@@ -61,8 +61,8 @@ describe Puppet::Type.type(:kafka_topic) do
       expect { Puppet::Type.type(:kafka_topic).new(
           name: 'TESTTOPIC1',
           ensure: :present,
-          num_partitions: '3',
-          replication_factor: '4'
+          partitions: '3',
+          replication: '4'
       ) }.not_to raise_error
 
     end
@@ -71,8 +71,8 @@ describe Puppet::Type.type(:kafka_topic) do
       expect { Puppet::Type.type(:kafka_topic).new(
           name: 'TESTTOPIC1',
           ensure: :present,
-          num_partitions: '3',
-          replication_factor: '4',
+          partitions: '3',
+          replication: '4',
           bladibla: '4'
       ) }.to raise_error Puppet::Error #, %r{Invalid parameter named 'bladibla'}
 

@@ -16,7 +16,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
 
   def self.get_zk_host
     if File.file?("/etc/kafka/server.properties")
-      rawdata = File.open('/etc/kafka/server.properties').readlines().flat_map { |x| x.split("=")[1].chomp.split(',') if x =~ %r{^zookeeper.connect(\s)?=} }.compact
+      rawdata = File.open('/etc/kafka/server.properties').readlines().flat_map {|x| x.split("=")[1].chomp.split(',') if x =~ %r{^zookeeper.connect(\s)?=}}.compact
       alive = rawdata.map {|x| x if self.port_open?(x)}.compact
       if alive.length > 0
         return alive.sample
@@ -63,7 +63,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         if splitted[1].start_with?('PartitionCount:')
           num_partition = splitted[1].split(':')[1]
           replication = splitted[2].split(':')[1]
-          hashdata[splitted[0]] = {:name => splitted[0], :num_partitions => Integer(num_partition), :replication_factor => Integer(replication), :partitions => []}
+          hashdata[splitted[0]] = {:name => splitted[0], :partitions => Integer(num_partition), :replication => Integer(replication)}
         elsif splitted[1].start_with?('Partition:')
           partition = splitted[1].split()[1]
           leader = splitted[2].split()[1]
@@ -82,10 +82,10 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
     end
     instances = []
     retarray.each do |instance|
-      instances << new(:name               => instance[:name],
-                       :ensure             => :present,
-                       :num_partitions     => instance[:num_partitions],
-                       :replication_factor => instance[:replication_factor]
+      instances << new(:name => instance[:name],
+                       :ensure => :present,
+                       :partitions => instance[:partitions],
+                       :replication => instance[:replication]
       )
     end
     instances
@@ -120,8 +120,8 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         kafka_topics('--create',
                      '--topic', resource[:name],
                      '--zookeeper', get_zk_host,
-                     '--partitions', resource[:num_partitions],
-                     '--replication-factor', resource[:replication_factor])
+                     '--partitions', resource[:partitions],
+                     '--replication-factor', resource[:replication])
     end
   end
 

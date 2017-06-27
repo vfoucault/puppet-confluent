@@ -25,19 +25,19 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
     end
   end
 
-  newproperty(:replication_factor) do
+  newproperty(:replication) do
     desc 'The topic\'s replication factor'
     defaultto(3)
-    validate do |replication_factor|
+    validate do |replication|
       begin
-        Integer(replication_factor)
+        Integer(replication)
       rescue
         raise ArgumentError, 'the replication factor must be an integer'
       end
     end
   end
 
-  newproperty(:num_partitions) do
+  newproperty(:partitions) do
     desc 'The topic\'s number of partitions'
     defaultto(3)
     validate do |num|

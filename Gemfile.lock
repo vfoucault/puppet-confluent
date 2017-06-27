@@ -83,7 +83,7 @@ DEPENDENCIES
   httparty
   json
   metadata-json-lint
-  puppet (= 3.8.7)
+  puppet
   puppet-lint
   puppetlabs_spec_helper
   rake
