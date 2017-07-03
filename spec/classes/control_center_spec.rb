@@ -39,36 +39,33 @@ describe 'confluent::control::center' do
             }
         }
       }
+      context 'basic setup'
+      expected_heap = '-Xmx3g'
 
-      it do
-        expected_heap = '-Xmx3g'
+      it {is_expected.to contain_file('/var/log/control-center')}
+      it {is_expected.to contain_package('confluent-control-center')}
+      it {is_expected.to contain_user('control-center')}
+      it {is_expected.to contain_service('control-center').with(
+          {
+              'ensure' => 'running',
+              'enable' => true
+          }
+      )}
 
-        is_expected.to contain_file('/var/log/control-center')
-        is_expected.to contain_package('confluent-control-center')
-        is_expected.to contain_user('control-center')
-        is_expected.to contain_service('control-center').with(
-            {
-                'ensure' => 'running',
-                'enable' => true
-            }
-        )
+      it {is_expected.to contain_ini_subsetting('c3_CONTROL_CENTER_HEAP_OPTS').with(
+          {
+              'path' => environment_file,
+              'value' => expected_heap
+          }
+      )}
 
-        is_expected.to contain_ini_subsetting('c3_CONTROL_CENTER_HEAP_OPTS').with(
-            {
-                'path' => environment_file,
-                'value' => expected_heap
-            }
-        )
+      it {is_expected.to contain_ini_setting('c3_c3/bootstrap.servers').with(
+          {
+              'path' => '/etc/confluent-control-center/control-center.properties',
+              'value' => 'kafka-01:9092,kafka-02:9092,kafka-03:9092'
+          }
+      )}
 
-        is_expected.to contain_ini_setting('c3_c3/bootstrap.servers').with(
-            {
-                'path' => '/etc/confluent-control-center/control-center.properties',
-                'value' => 'kafka-01:9092,kafka-02:9092,kafka-03:9092'
-            }
-        )
-
-
-      end
     end
   end
 end

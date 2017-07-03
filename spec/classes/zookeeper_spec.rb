@@ -26,26 +26,26 @@ describe 'confluent::zookeeper' do
         }
       }
 
-      it do
+      context 'basic setup' do
         expected_heap = '-Xmx256M'
 
-        is_expected.to contain_ini_subsetting('zookeeper_KAFKA_HEAP_OPTS').with(
+        it {is_expected.to contain_ini_subsetting('zookeeper_KAFKA_HEAP_OPTS').with(
             {
                 'path' => environment_file,
                 'value' => expected_heap
             }
-        )
+        )}
 
-        is_expected.to contain_package('confluent-kafka-2.11')
-        is_expected.to contain_user('zookeeper')
-        is_expected.to contain_service('zookeeper').with(
+        it {is_expected.to contain_package('confluent-kafka-2.11')}
+        it {is_expected.to contain_user('zookeeper')}
+        it {is_expected.to contain_service('zookeeper').with(
             {
                 'ensure' => 'running',
                 'enable' => true
             }
-        )
-        is_expected.to contain_file('/var/log/zookeeper')
-        is_expected.to contain_file('/var/lib/zookeeper')
+        )}
+        it {is_expected.to contain_file('/var/log/zookeeper')}
+        it {is_expected.to contain_file('/var/lib/zookeeper')}
       end
     end
   end

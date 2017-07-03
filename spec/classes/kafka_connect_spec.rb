@@ -16,23 +16,23 @@ require 'spec_helper'
           'osfamily' => 'RedHat'
       }
     }
-    it do
-      is_expected.to contain_file("/var/log/kafka-connect-#{class_name}")
-      is_expected.to contain_package('confluent-kafka-2.11')
-      is_expected.to contain_ini_setting("connect-#{class_name}_connect-#{class_name}/bootstrap.servers").with(
+    context 'basic setup' do
+      it {is_expected.to contain_file("/var/log/kafka-connect-#{class_name}")}
+      it {is_expected.to contain_package('confluent-kafka-2.11')}
+      it {is_expected.to contain_ini_setting("kafka-connect-#{class_name}_kafka-connect-#{class_name}/bootstrap.servers").with(
           {
               'path' => "/etc/kafka/connect-#{class_name}.properties",
               'value' => 'kafka-01:9093'
           }
-      )
-      is_expected.to contain_user("connect-#{class_name}")
-      is_expected.to contain_service("kafka-connect-#{class_name}").with(
+      )}
+      it {is_expected.to contain_user("connect-#{class_name}")}
+      it {is_expected.to contain_service("kafka-connect-#{class_name}").with(
           {
               'ensure' => 'running',
               'enable' => true
           }
-      )
-      is_expected.to contain_file("/var/log/kafka-connect-#{class_name}")
+      )}
+      it {is_expected.to contain_file("/var/log/kafka-connect-#{class_name}")}
     end
 
     expected_heap = '-Xmx256M'
@@ -45,7 +45,7 @@ require 'spec_helper'
       }
 
       it do
-        is_expected.to contain_ini_subsetting("connect-#{class_name}_KAFKA_HEAP_OPTS").with(
+        is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
                 'path' => "/etc/sysconfig/kafka-connect-#{class_name}",
                 'value' => expected_heap
@@ -62,7 +62,7 @@ require 'spec_helper'
       }
 
       it do
-        is_expected.to contain_ini_subsetting("connect-#{class_name}_KAFKA_HEAP_OPTS").with(
+        is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
                 'path' => "/etc/default/kafka-connect-#{class_name}",
                 'value' => expected_heap

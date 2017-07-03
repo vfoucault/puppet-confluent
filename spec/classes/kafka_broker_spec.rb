@@ -26,32 +26,32 @@ describe 'confluent::kafka::broker' do
         }
       }
 
-      it do
+      context 'basic setup' do
         expected_heap = '-Xmx256M'
 
-        is_expected.to contain_ini_subsetting('kafka_KAFKA_HEAP_OPTS').with(
+        it {is_expected.to contain_ini_subsetting('kafka_KAFKA_HEAP_OPTS').with(
             {
                 'path' => environment_file,
                 'value' => expected_heap
             }
-        )
+        )}
 
-        is_expected.to contain_ini_setting('kafka_kafka/broker.id').with(
+        it {is_expected.to contain_ini_setting('kafka_kafka/broker.id').with(
             {
                 'path' => '/etc/kafka/server.properties',
                 'value' => '0'
             }
-        )
-        is_expected.to contain_package('confluent-kafka-2.11')
-        is_expected.to contain_user('kafka')
-        is_expected.to contain_service('kafka').with(
+        )}
+        it {is_expected.to contain_package('confluent-kafka-2.11')}
+        it {is_expected.to contain_user('kafka')}
+        it {is_expected.to contain_service('kafka').with(
             {
                 'ensure' => 'running',
                 'enable' => true
             }
-        )
-        is_expected.to contain_file('/var/log/kafka')
-        is_expected.to contain_file('/var/lib/kafka')
+        )}
+        it {is_expected.to contain_file('/var/log/kafka')}
+        it {is_expected.to contain_file('/var/lib/kafka')}
       end
     end
   end
