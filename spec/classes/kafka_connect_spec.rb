@@ -21,6 +21,7 @@ require 'spec_helper'
       it {is_expected.to contain_package('confluent-kafka-2.11')}
       it {is_expected.to contain_ini_setting("kafka-connect-#{class_name}_kafka-connect-#{class_name}/bootstrap.servers").with(
           {
+              'setting' => 'bootstrap.servers',
               'path' => "/etc/kafka/connect-#{class_name}.properties",
               'value' => 'kafka-01:9093'
           }
@@ -47,6 +48,7 @@ require 'spec_helper'
       it do
         is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
+                'setting' => 'KAFKA_HEAP_OPTS',
                 'path' => "/etc/sysconfig/kafka-connect-#{class_name}",
                 'value' => expected_heap
             }
@@ -64,6 +66,7 @@ require 'spec_helper'
       it do
         is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
+                'setting' => 'KAFKA_HEAP_OPTS',
                 'path' => "/etc/default/kafka-connect-#{class_name}",
                 'value' => expected_heap
             }

@@ -37,6 +37,7 @@ describe 'confluent::kafka::broker' do
 
         it {is_expected.to contain_ini_setting('kafka_kafka/broker.id').with(
             {
+                'setting' => 'broker.id',
                 'path' => '/etc/kafka/server.properties',
                 'value' => '0'
             }
@@ -61,6 +62,7 @@ describe 'confluent::kafka::broker' do
         }
         it {is_expected.to contain_ini_setting('kafka_kafka/broker.id').with(
             {
+                'setting' => 'broker.id',
                 'path' => '/etc/kafka/server.properties',
                 'value' => '0'
             }

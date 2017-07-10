@@ -19,6 +19,7 @@ define confluent::kafka_environment_variable (
 ) {
   $splitted = split($name, '/')
   $setting = $splitted[1]
+  # notify { "name is ${name} and splitted[1] is ${splitted[1]}": }
   $setting_name = "${application}_${setting}"
 
   validate_absolute_path($path)
