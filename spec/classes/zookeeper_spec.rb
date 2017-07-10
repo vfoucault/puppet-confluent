@@ -20,13 +20,12 @@ describe 'confluent::zookeeper' do
         }
       }
 
-      let(:params) {
-        {
-            'zookeeper_id' => '1',
-        }
-      }
-
       context 'basic setup' do
+        let(:params) {
+          {
+              'zookeeper_id' => '1',
+          }
+        }
         expected_heap = '-Xmx256M'
 
         it {is_expected.to contain_ini_subsetting('zookeeper_KAFKA_HEAP_OPTS').with(
@@ -46,6 +45,24 @@ describe 'confluent::zookeeper' do
         )}
         it {is_expected.to contain_file('/var/log/zookeeper')}
         it {is_expected.to contain_file('/var/lib/zookeeper')}
+        it {is_expected.to contain_file('/var/lib/zookeeper/myid')
+                               .with_owner('zookeeper')
+                               .with_group('zookeeper')
+                               .with_content('1')
+                               .that_requires('User[zookeeper]')}
+      end
+
+      context 'basic setup with zookeeper_id as integer' do
+        let(:params) {
+          {
+              'zookeeper_id' => 1,
+          }
+        }
+        it {is_expected.to contain_file('/var/lib/zookeeper/myid')
+                               .with_owner('zookeeper')
+                               .with_group('zookeeper')
+                               .with_content('1')
+                               .that_requires('User[zookeeper]')}
       end
     end
   end

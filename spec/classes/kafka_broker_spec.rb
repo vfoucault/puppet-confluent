@@ -20,13 +20,12 @@ describe 'confluent::kafka::broker' do
         }
       }
 
-      let(:params) {
-        {
-            'broker_id' => '0'
-        }
-      }
-
       context 'basic setup' do
+        let(:params) {
+          {
+              'broker_id' => '0'
+          }
+        }
         expected_heap = '-Xmx256M'
 
         it {is_expected.to contain_ini_subsetting('kafka_KAFKA_HEAP_OPTS').with(
@@ -52,6 +51,20 @@ describe 'confluent::kafka::broker' do
         )}
         it {is_expected.to contain_file('/var/log/kafka')}
         it {is_expected.to contain_file('/var/lib/kafka')}
+      end
+
+      context 'basic setup with broker_id as integer' do
+        let(:params) {
+          {
+              'broker_id' => 0
+          }
+        }
+        it {is_expected.to contain_ini_setting('kafka_kafka/broker.id').with(
+            {
+                'path' => '/etc/kafka/server.properties',
+                'value' => '0'
+            }
+        )}
       end
     end
   end

@@ -74,7 +74,7 @@ class confluent::kafka::broker (
 
   $kafka_default_settings = {
     'broker.id' => {
-      'value' => $broker_id
+      'value' => "${broker_id}"
     },
     'log.dirs' => {
       'value' => $data_path
