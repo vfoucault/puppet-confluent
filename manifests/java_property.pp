@@ -25,7 +25,7 @@ define confluent::java_property (
     section => '',
     setting => $name,
     tag     => 'kafka-setting',
-    value   => $value,
+    value   => "${value}",
     notify  => Service[$application]
   }
 }
