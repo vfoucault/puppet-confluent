@@ -23,15 +23,22 @@ define confluent::kafka_environment_variable (
   $setting_name = "${application}_${setting}"
 
   validate_absolute_path($path)
-
-  ini_subsetting{ $setting_name:
+  # TODO: This should be done with ini_subsetting or with a quoted value. So far, the ini_setting is a working workaround
+  # ini_subsetting{ $setting_name:
+  #   ensure            => $ensure,
+  #   path              => $path,
+  #   section           => '',
+  #   setting           => "${setting}",
+  #   subsetting        => '',
+  #   key_val_separator => '=',
+  #   quote_char        => '"',
+  #   tag               => "${application}-setting",
+  #   value             => "${value}"
+  # }
+  ini_setting{ $setting_name:
     ensure            => $ensure,
     path              => $path,
-    section           => '',
     setting           => "${setting}",
-    subsetting        => '',
-    key_val_separator => '=',
-    quote_char        => '"',
     tag               => "${application}-setting",
     value             => "${value}"
   }

@@ -46,7 +46,7 @@ require 'spec_helper'
       }
 
       it do
-        is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
+        is_expected.to contain_ini_setting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
                 'setting' => 'KAFKA_HEAP_OPTS',
                 'path' => "/etc/sysconfig/kafka-connect-#{class_name}",
@@ -64,7 +64,7 @@ require 'spec_helper'
       }
 
       it do
-        is_expected.to contain_ini_subsetting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
+        is_expected.to contain_ini_setting("kafka-connect-#{class_name}_KAFKA_HEAP_OPTS").with(
             {
                 'setting' => 'KAFKA_HEAP_OPTS',
                 'path' => "/etc/default/kafka-connect-#{class_name}",

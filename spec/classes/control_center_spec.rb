@@ -52,7 +52,7 @@ describe 'confluent::control::center' do
           }
       )}
 
-      it {is_expected.to contain_ini_subsetting('c3_CONTROL_CENTER_HEAP_OPTS').with(
+      it {is_expected.to contain_ini_setting('c3_CONTROL_CENTER_HEAP_OPTS').with(
           {
               'path' => environment_file,
               'value' => expected_heap

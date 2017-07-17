@@ -31,7 +31,7 @@ describe 'confluent::schema::registry' do
       context 'basic setup' do
         expected_heap = '-Xmx256M'
 
-        it {is_expected.to contain_ini_subsetting('schema-registry_SCHEMA_REGISTRY_HEAP_OPTS').with(
+        it {is_expected.to contain_ini_setting('schema-registry_SCHEMA_REGISTRY_HEAP_OPTS').with(
             {
                 'setting' => 'SCHEMA_REGISTRY_HEAP_OPTS',
                 'path' => environment_file,

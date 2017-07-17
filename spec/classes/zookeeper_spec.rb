@@ -28,7 +28,7 @@ describe 'confluent::zookeeper' do
         }
         expected_heap = '-Xmx256M'
 
-        it {is_expected.to contain_ini_subsetting('zookeeper_KAFKA_HEAP_OPTS').with(
+        it {is_expected.to contain_ini_setting('zookeeper_KAFKA_HEAP_OPTS').with(
             {
                 'setting' => 'KAFKA_HEAP_OPTS',
                 'path' => environment_file,
