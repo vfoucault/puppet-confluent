@@ -63,14 +63,14 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         if splitted[1].start_with?('PartitionCount:')
           num_partition = splitted[1].split(':')[1]
           replication = splitted[2].split(':')[1]
-          hashdata[splitted[0]] = {:name => splitted[0], :partitions => Integer(num_partition), :replication => Integer(replication)}
+          hashdata[splitted[0]] = {:name => splitted[0], :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
         elsif splitted[1].start_with?('Partition:')
           partition = splitted[1].split()[1]
           leader = splitted[2].split()[1]
           replicats = splitted[3].split()[1]
           insync = splitted[4].split()[1]
           hashstatus = {:partition => partition, :leader => leader, :replicats => replicats, :isr => insync}
-          hashdata[splitted[0]][:partitions].push(hashstatus)
+          hashdata[splitted[0]][:partitions_data].push(hashstatus)
         end
       else
         next
