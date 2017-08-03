@@ -48,4 +48,16 @@ Puppet::Type.newtype(:kafka_topic, :self_refresh => false) do
       end
     end
   end
+
+  newproperty(:config) do
+    desc 'The topic\'s config related key value hash'
+    defaultto(Hash.new())
+    validate do |conf_hash|
+      begin
+        Hash(conf_hash)
+      rescue
+        raise ArgumentError, 'the configuration must be a key/value hash'
+      end
+    end
+  end
 end

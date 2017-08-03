@@ -63,7 +63,8 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         if splitted[1].start_with?('PartitionCount:')
           num_partition = splitted[1].split(':')[1]
           replication = splitted[2].split(':')[1]
-          hashdata[splitted[0]] = {:name => splitted[0], :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
+          config = splitted[3].split(':')[1].split(',').map { |x| { x.split('=')[0] => x.split('=')[1] }}.reduce Hash.new, :merge
+          hashdata[splitted[0]] = {:name => splitted[0], :config => config, :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
         elsif splitted[1].start_with?('Partition:')
           partition = splitted[1].split()[1]
           leader = splitted[2].split()[1]
@@ -117,11 +118,23 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
       when :absent
         kafka_topics('--delete', '--force', '--topic', resource[:name], '--zookeeper', get_zk_host)
       when :present
-        kafka_topics('--create',
-                     '--topic', resource[:name],
-                     '--zookeeper', get_zk_host,
-                     '--partitions', resource[:partitions],
-                     '--replication-factor', resource[:replication])
+        if resource[:config].length > 1
+          # build a string from key/value hash
+          str_config = resource[:config].map {|k, v| '#{k}=#{v}'}.join(',')
+          kafka_topics('--create',
+                       '--topic', resource[:name],
+                       '--zookeeper', get_zk_host,
+                       '--partitions', resource[:partitions],
+                       '--replication-factor', resource[:replication],
+                       '--config', str_config)
+        else
+          kafka_topics('--create',
+                       '--topic', resource[:name],
+                       '--zookeeper', get_zk_host,
+                       '--partitions', resource[:partitions],
+                       '--replication-factor', resource[:replication])
+        end
+
     end
   end
 
