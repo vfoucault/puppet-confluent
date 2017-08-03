@@ -121,7 +121,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
       when :absent
         kafka_topics('--delete', '--force', '--topic', resource[:name], '--zookeeper', get_zk_host)
       when :present
-        if resource[:config].length > 1
+        if !resource[:config].nil?
           # build a string from key/value hash
           str_config = resource[:config].map {|k, v| '#{k}=#{v}'}.join(',')
           kafka_topics('--create',
