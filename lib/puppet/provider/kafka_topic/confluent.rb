@@ -123,7 +123,7 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
       when :present
         if !resource[:config].nil?
           # build a string from key/value hash
-          str_config = resource[:config].map {|k, v| '#{k}=#{v}'}.join(',')
+          str_config = resource[:config].map {|k, v| "#{k}=#{v}"}.join(',')
           kafka_topics('--create',
                        '--topic', resource[:name],
                        '--zookeeper', get_zk_host,
