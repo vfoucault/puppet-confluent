@@ -50,6 +50,32 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
     kafka_topics('--list', '--zookeeper', get_zk_host).chomp.split("\n")
   end
 
+  def toto(data)
+    hashdata = Hash.new
+    data.split('Topic:').map {|x| x.strip if !x.empty?}.compact.each do |entry|
+      splitted = entry.split("\t")
+      if splitted.length > 1
+        if splitted[1].start_with?('PartitionCount:')
+          num_partition = splitted[1].split(':')[1]
+          replication = splitted[2].split(':')[1]
+
+          hashdata[splitted[0]] = {:name => splitted[0], :config => config, :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
+        elsif splitted[1].start_with?('Partition:')
+          partition = splitted[1].split()[1]
+          leader = splitted[2].split()[1]
+          replicats = splitted[3].split()[1]
+          insync = splitted[4].split()[1]
+          hashstatus = {:partition => partition, :leader => leader, :replicats => replicats, :isr => insync}
+          hashdata[splitted[0]][:partitions_data].push(hashstatus)
+        end
+      else
+        next
+      end
+      return hashdata
+    end
+  end
+
+
   def self.instances(name=nil)
     hashdata = Hash.new
     if name
@@ -63,7 +89,8 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         if splitted[1].start_with?('PartitionCount:')
           num_partition = splitted[1].split(':')[1]
           replication = splitted[2].split(':')[1]
-          hashdata[splitted[0]] = {:name => splitted[0], :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
+          config = splitted[3].split(':')[1].split(',').map { |x| { x.split('=')[0] => x.split('=')[1] }}.reduce Hash.new, :merge
+          hashdata[splitted[0]] = {:name => splitted[0], :config => :config, :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
         elsif splitted[1].start_with?('Partition:')
           partition = splitted[1].split()[1]
           leader = splitted[2].split()[1]
@@ -117,11 +144,23 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
       when :absent
         kafka_topics('--delete', '--force', '--topic', resource[:name], '--zookeeper', get_zk_host)
       when :present
-        kafka_topics('--create',
-                     '--topic', resource[:name],
-                     '--zookeeper', get_zk_host,
-                     '--partitions', resource[:partitions],
-                     '--replication-factor', resource[:replication])
+        if resource[:config].length > 1
+          # build a string from key/value hash
+          str_config = resource[:config].map {|k, v| '#{k}=#{v}'}.join(',')
+          kafka_topics('--create',
+                       '--topic', resource[:name],
+                       '--zookeeper', get_zk_host,
+                       '--partitions', resource[:partitions],
+                       '--replication-factor', resource[:replication],
+                       '--config', str_config)
+        else
+          kafka_topics('--create',
+                       '--topic', resource[:name],
+                       '--zookeeper', get_zk_host,
+                       '--partitions', resource[:partitions],
+                       '--replication-factor', resource[:replication])
+        end
+
     end
   end
 

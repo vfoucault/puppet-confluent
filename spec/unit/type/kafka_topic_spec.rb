@@ -54,6 +54,18 @@ describe Puppet::Type.type(:kafka_topic) do
     end
   end
 
+  describe 'property `config`' do
+    it 'passes validation with a correct valid hash' do
+      expect { described_class.new(name: 'TOPICTEST', config: {}) }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', config: {'key' => 'value'}) }.not_to raise_error
+      expect { described_class.new(name: 'TOPICTEST', config: {'key' => 'value', 'key2' => 'value2'}) }.not_to raise_error
+    end
+
+    it 'fails validation with an incorrect value' do
+      expect { described_class.new(name: 'TOPICTEST', config: ['abc', '123']) }.to raise_error Puppet::ResourceError, %r{the configuration must be a key/value hash}
+    end
+  end
+
   describe 'when creating resources' do
 
     it 'creating resource should not fail with correct parameters' do
