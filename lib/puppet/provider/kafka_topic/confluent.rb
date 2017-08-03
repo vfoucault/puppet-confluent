@@ -63,7 +63,10 @@ Puppet::Type.type(:kafka_topic).provide(:confluent) do
         if splitted[1].start_with?('PartitionCount:')
           num_partition = splitted[1].split(':')[1]
           replication = splitted[2].split(':')[1]
-          config = splitted[3].split(':')[1].split(',').map { |x| { x.split('=')[0] => x.split('=')[1] }}.reduce Hash.new, :merge
+          raw_config = splitted[3].split(':')[1]
+          if raw_config
+            config = raw_config.split(',').map { |x| { x.split('=')[0] => x.split('=')[1] }}.reduce Hash.new, :merge
+          end
           hashdata[splitted[0]] = {:name => splitted[0], :config => config, :partitions => Integer(num_partition), :replication => Integer(replication), :partitions_data => []}
         elsif splitted[1].start_with?('Partition:')
           partition = splitted[1].split()[1]
