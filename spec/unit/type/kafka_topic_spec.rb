@@ -62,6 +62,7 @@ describe Puppet::Type.type(:kafka_topic) do
     end
 
     it 'fails validation with an incorrect value' do
+      expect { described_class.new(name: 'TOPICTEST', config: 'Hey joe !') }.to raise_error Puppet::ResourceError, %r{the configuration must be a key/value hash}
       expect { described_class.new(name: 'TOPICTEST', config: ['abc', '123']) }.to raise_error Puppet::ResourceError, %r{the configuration must be a key/value hash}
     end
   end
