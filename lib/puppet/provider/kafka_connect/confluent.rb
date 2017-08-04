@@ -1,7 +1,5 @@
 require 'socket'
 require 'timeout'
-require 'httparty'
-require 'pp'
 
 Puppet::Type.type(:kafka_connect).provide(:confluent) do
   initvars
@@ -10,6 +8,7 @@ Puppet::Type.type(:kafka_connect).provide(:confluent) do
 
   def initialize(value={})
     super(value)
+    require 'httparty'
     @property_flush = {}
   end
 
